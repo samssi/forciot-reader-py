@@ -35,6 +35,7 @@ async def run_queue_consumer(queue: asyncio.Queue):
     while True:
         epoch, data = await queue.get()
         if data is None:
+            logger.info('Disconnecting')
             break
         else:
             if epoch - previous_time > MEASURE_FREQ:
@@ -42,7 +43,7 @@ async def run_queue_consumer(queue: asyncio.Queue):
                 handle2_bytes = bytes(data)
                 int_values = [byte for byte in handle2_bytes]
                 logger.info(f'{int_values}')
-                with open("samples.txt", "a") as file:
+                with open('samples.txt', 'a') as file:
                     file.write(str(int_values)+'\n')
 
 
@@ -53,9 +54,10 @@ async def main(address: str, char_uuid: str):
     await asyncio.gather(client_task, consumer_task)
 
 if __name__ == "__main__":
-    logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s',
-                        level=logging.INFO,
-                        datefmt='%Y-%m-%d %H:%M:%S')
+    logging.basicConfig(
+        format='%(asctime)s.%(msecs)03d %(levelname)-8s %(message)s',
+        level=logging.INFO,
+        datefmt='%Y-%m-%d %H:%M:%S')
     asyncio.run(
         main(
             sys.argv[1] if len(sys.argv) > 1 else ADDRESS,
